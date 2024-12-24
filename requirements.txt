@@ -1,0 +1,14 @@
+# Async IO for concurrency handling
+asyncio
+
+# For handling logging and other built-in Python modules
+# These are typically part of the standard library and do not need to be installed separately.
+
+# If implementing ESNI/ECH or DNS functionality with scapy or similar tools:
+# Uncomment the following lines if needed in the future for ESNI/ECH checks or DNS queries
+
+# scapy (for advanced DNS and packet manipulation)
+scapy
+
+# Additional dependencies for web-based functionality, if needed
+aiohttp
