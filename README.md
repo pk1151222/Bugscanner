@@ -1,126 +1,162 @@
-# Bugscanner
+
 ---
 
-# SNI Bug Finder Tool
+# Bugscanner - TLS & Port Scanning Tool
 
-A powerful tool to scan domains for SNI (Server Name Indication) bugs, perform TLS version and cipher suite checks, and discover open ports. The tool includes rate limiting, ESNI/ECH checks, and supports saving results in both JSON and CSV formats.
+**Bugscanner** is a comprehensive domain and port scanning tool that allows users to identify open ports, extract TLS handshake details, and analyze the security aspects of websites. It supports checking for HTTP response status, extracting TLS versions, cipher suites, and various features like ESNI and ECH.
 
 ## Features
 
-- **Port Scanning:** Scans a range of ports for open services.
-- **TLS Information Extraction:** Extracts TLS version, cipher suite, and ALPN protocols.
-- **ESNI/ECH Detection:** Placeholder for ESNI (Encrypted Server Name Indication) and ECH (Encrypted ClientHello) checks.
-- **Rate Limiting:** Controls the number of simultaneous requests.
-- **File Input:** Supports scanning single domains or reading from a file.
-- **Output Formats:** Saves results in JSON or CSV format.
-- **Asynchronous Execution:** Fast domain scanning with `asyncio` for concurrent port scanning and DNS resolution.
+- Scans a domain or a list of domains for open ports.
+- Extracts TLS handshake details (versions, cipher suites, ALPN protocols).
+- Checks for HTTP response status.
+- Optionally checks for ESNI and ECH support.
+- Supports rate-limited scanning for performance.
+- Outputs results in JSON or CSV format.
+- Detailed logging for debugging and tracking errors.
 
 ## Prerequisites
 
-- Python 3.6 or higher
-- Required Python libraries:
-  - `asyncio`
+Before using the Bugscanner tool, ensure you have the following:
+
+- Python 3.7 or later.
+- The following Python libraries:
+  - `requests`
   - `socket`
   - `ssl`
-  - `csv`
-  - `json`
-
-To install the dependencies, run:
+  - `logging`
+  
+You can install the required dependencies with the following command:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Where `requirements.txt` should contain:
+## Installation
 
-```
-# Optional dependencies for future enhancements
-aiohttp
-```
+1. Clone the repository to your local machine:
+
+   ```bash
+   git clone https://github.com/pk1151222/Bugscanner.git
+   ```
+
+2. Navigate to the project directory:
+
+   ```bash
+   cd Bugscanner
+   ```
+
+3. Install the required Python libraries:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ## Usage
 
-### Command Line Arguments
+### Command Line Options
 
-- `-i, --input <domain or file>`: The domain or file containing domains to scan. If a file is provided, each line should be a domain.
-- `-s, --start <port>`: The starting port for the scan (default is 1).
-- `-e, --end <port>`: The ending port for the scan (default is 1024).
-- `-o, --output <output_file>`: The output file for storing results (`results.json` or `results.csv`).
-- `-r, --rate <rate_limit>`: The maximum number of concurrent requests (default is 100).
+The `Bugscanner` tool can be invoked via the command line with the following options:
 
-### Example Usage
+- **input**: Path to a file containing domains or a single domain to scan. (Required)
+- **start_port**: Starting port number for the scan. Default is `1`.
+- **end_port**: Ending port number for the scan. Default is `1024`.
+- **output**: Output file to save the results (JSON or CSV format). Default is `results.json`.
+- **rate_limit**: The number of simultaneous requests to allow. Default is `10`.
 
-1. **Single Domain Scan**:
+### Example Command Syntax
+
+```bash
+python bugscanner.py --input <domain_or_domains_file> --start_port <start_port> --end_port <end_port> --output <output_file> --rate_limit <rate_limit>
+```
+
+### Command Options
+
+- `--input, -i`: The domain or file containing domains to scan (Required).
+- `--start_port, -s`: Starting port number (default: `1`).
+- `--end_port, -e`: Ending port number (default: `1024`).
+- `--output, -o`: Output file (default: `results.json`).
+- `--rate_limit, -r`: Rate limit for concurrent connections (default: `10`).
+- `--help, -h`: Displays help information for using the tool.
+
+### Example Commands
+
+1. **Scan a single domain**:
    ```bash
-   python sni_bug_finder.py -i example.com -s 1 -e 1024 -o results.json -r 50
+   python bugscanner.py --input example.com --start_port 80 --end_port 443 --output results.json --rate_limit 5
    ```
 
-2. **Scan from a File** (each line contains a domain):
+2. **Scan multiple domains from a file**:
    ```bash
-   python sni_bug_finder.py -i domains.txt -s 1 -e 1024 -o results.csv -r 100
+   python bugscanner.py --input domains.txt --start_port 1 --end_port 1024 --output results.csv --rate_limit 10
    ```
 
-3. **Custom Port Range and Rate Limit**:
+3. **Scan with a different rate limit**:
    ```bash
-   python sni_bug_finder.py -i example.com -s 80 -e 443 -o results.json -r 200
+   python bugscanner.py --input example.com --start_port 1 --end_port 1024 --output results.csv --rate_limit 3
    ```
-
-## ESNI and ECH Checks
-
-The tool has placeholders for ESNI (Encrypted Server Name Indication) and ECH (Encrypted ClientHello) checks. These checks are designed to be implemented later and may require further dependencies, such as `scapy` for DNS queries.
 
 ## Output Formats
 
-- **JSON**: Stores results in JSON format with detailed information about the domain.
-- **CSV**: Stores results in CSV format with columns: Domain, IP, Server, Ports, TLSVersions, CipherSuites, ALPNProtocols, ESNI, ECH.
+You can save the results in two different formats: JSON or CSV. The output format is determined based on the file extension.
 
-### Example Output (JSON)
+### JSON Output
+
+Example of a JSON result:
 
 ```json
 [
-  {
-    "Domain": "example.com",
-    "IP": "93.184.216.34",
-    "Server": "nginx",
-    "Ports": [80, 443],
-    "TLSVersions": ["TLSv1.2", "TLSv1.3"],
-    "CipherSuites": ["TLS_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"],
-    "ALPNProtocols": ["h2", "http/1.1"],
-    "ESNI": false,
-    "ECH": false
-  }
+    {
+        "Domain": "example.com",
+        "IP": "93.184.216.34",
+        "Server": "example.com",
+        "Ports": [80, 443],
+        "TLSVersions": ["TLSv1.2", "TLSv1.3"],
+        "CipherSuites": ["TLS_AES_128_GCM_SHA256", "TLS_AES_256_GCM_SHA384"],
+        "ALPNProtocols": ["h2", "http/1.1"],
+        "ESNI": false,
+        "ECH": false,
+        "HTTPStatus": "200 OK"
+    }
 ]
 ```
 
-### Example Output (CSV)
+### CSV Output
+
+Example of a CSV result:
 
 ```csv
-Domain, IP, Server, Ports, TLSVersions, CipherSuites, ALPNProtocols, ESNI, ECH
-example.com, 93.184.216.34, nginx, 80, 443, "TLSv1.2, TLSv1.3", "TLS_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "h2, http/1.1", false, false
+Domain,IP,Server,Ports,TLSVersions,CipherSuites,ALPNProtocols,ESNI,ECH,HTTPStatus
+example.com,93.184.216.34,example.com,"[80, 443]","['TLSv1.2', 'TLSv1.3']","['TLS_AES_128_GCM_SHA256', 'TLS_AES_256_GCM_SHA384']","['h2', 'http/1.1']",false,false,"200 OK"
 ```
 
-## Logging
+## Logging and Debugging
 
-The tool uses Python's built-in `logging` library for error reporting and progress tracking. Logs are displayed in the console during execution.
+Bugscanner provides detailed logging to track errors, progress, and debugging information.
 
-### Log Levels:
-- `INFO`: General information, such as domain scanning progress.
-- `WARNING`: Non-critical issues, such as TLS connection errors.
-- `ERROR`: Critical issues, such as DNS resolution failures.
+- **Error Handling**: The tool captures connection errors, SSL/TLS handshake failures, and port scanning failures. Each error is logged with a specific message for better debugging.
+- **Log Level**: The default log level is `INFO`, but you can set it to `DEBUG` for more detailed information during development.
 
-## Contributing
+Example log entry:
 
-1. Fork this repository.
-2. Create a new branch.
-3. Implement your changes and improvements.
-4. Submit a pull request.
+```text
+Scanning domain: example.com
+TLS version: TLSv1.3, Cipher Suite: TLS_AES_128_GCM_SHA256, ALPN: h2
+Open ports: 80, 443
+HTTP Response Status: 200 OK
+```
 
-We welcome contributions, especially for implementing ESNI/ECH detection, optimizing scanning techniques, or adding more features!
+## Error Handling
+
+Bugscanner captures and logs various types of errors:
+
+- **Connection Timeouts**: If the tool fails to connect to a domain within the specified timeout, an error will be logged.
+- **SSL/TLS Errors**: Errors during the TLS handshake are caught and logged with details.
+- **Port Scanning Failures**: Any issues encountered during the port scan (e.g., network errors) will be recorded.
 
 ## License
 
-This tool is open-source and available under the [MIT License](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-This **README.md** provides comprehensive instructions on how to use, configure, and extend the tool. Let me know if you need further adjustments!
