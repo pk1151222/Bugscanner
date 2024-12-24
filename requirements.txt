@@ -12,3 +12,5 @@ scapy
 
 # Additional dependencies for web-based functionality, if needed
 aiohttp
+
+requests
